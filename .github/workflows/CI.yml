@@ -1,0 +1,36 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  smoke_test:
+    name: Smoke test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        rust: [nightly, beta, stable]
+        node: [ '10', '12' ]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install ${{ matrix.rust }}
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+    - name: Install nj-cli build
+      run:  cargo install nj-cli
+    - name: Install NPM package
+      run: npm install @fluvio/client
+    - name: Build package
+      run: make
+    - name: Run Test
+      run: node test.js 
